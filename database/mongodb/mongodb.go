@@ -8,17 +8,16 @@ import (
 	"net/url"
 	"strconv"
 
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/mongodb/mongo-go-driver/mongo/options"
+	"github.com/mongodb/mongo-go-driver/x/network/connstring"
 )
 
 func init() {
-	db := Mongo{}
-	database.Register("mongodb", &db)
-	database.Register("mongodb+srv", &db)
+	database.Register("mongodb", &Mongo{})
 }
 
 var DefaultMigrationsCollection = "schema_migrations"
@@ -61,7 +60,6 @@ func WithInstance(instance *mongo.Client, config *Config) (database.Driver, erro
 		db:     instance.Database(config.DatabaseName),
 		config: config,
 	}
-
 	return mc, nil
 }
 
@@ -75,12 +73,21 @@ func (m *Mongo) Open(dsn string) (database.Driver, error) {
 		return nil, ErrNoDatabaseName
 	}
 
-	unknown := url.Values(uri.UnknownOptions)
+	purl, err := url.Parse(dsn)
+	if err != nil {
+		return nil, err
+	}
+	migrationsCollection := purl.Query().Get("x-migrations-collection")
+	if len(migrationsCollection) == 0 {
+		migrationsCollection = DefaultMigrationsCollection
+	}
 
-	migrationsCollection := unknown.Get("x-migrations-collection")
-	transactionMode, _ := strconv.ParseBool(unknown.Get("x-transaction-mode"))
+	transactionMode, _ := strconv.ParseBool(purl.Query().Get("x-transaction-mode"))
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dsn))
+	q := migrate.FilterCustomQuery(purl)
+	q.Scheme = "mongodb"
+
+	client, err := mongo.Connect(context.TODO(), q.String())
 	if err != nil {
 		return nil, err
 	}
@@ -100,13 +107,19 @@ func (m *Mongo) Open(dsn string) (database.Driver, error) {
 
 func (m *Mongo) SetVersion(version int, dirty bool) error {
 	migrationsCollection := m.db.Collection(m.config.MigrationsCollection)
-	if err := migrationsCollection.Drop(context.TODO()); err != nil {
-		return &database.Error{OrigErr: err, Err: "drop migrations collection failed"}
+	var tr *bool
+	*tr = true
+	filt := bson.D{{"version", bson.D{{"$exists", false}}}}
+	if res := migrationsCollection.FindOneAndUpdate(context.TODO(), filt, bson.M{"version": version, "dirty": dirty}, &options.FindOneAndUpdateOptions{Upsert: tr}); res.Err() != nil {
+		return &database.Error{OrigErr: res.Err(), Err: "drop migrations collection failed"}
 	}
-	_, err := migrationsCollection.InsertOne(context.TODO(), bson.M{"version": version, "dirty": dirty})
-	if err != nil {
-		return &database.Error{OrigErr: err, Err: "save version failed"}
-	}
+	//if err := migrationsCollection.Drop(context.TODO()); err != nil {
+	//	return &database.Error{OrigErr: err, Err: "drop migrations collection failed"}
+	//}
+	//_, err := migrationsCollection.InsertOne(context.TODO(), bson.M{"version": version, "dirty": dirty})
+	//if err != nil {
+	//	return &database.Error{OrigErr: err, Err: "save version failed"}
+	//}
 	return nil
 }
 
