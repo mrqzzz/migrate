@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/golang-migrate/migrate/v4"
+	"github.com/mrqzzz/migrate"
 	"io"
 	"strconv"
 	"strings"
@@ -22,10 +22,9 @@ import (
 )
 
 import (
-	"github.com/golang-migrate/migrate/v4/database"
-	dt "github.com/golang-migrate/migrate/v4/database/testing"
-	"github.com/golang-migrate/migrate/v4/dktesting"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	dt "github.com/mrqzzz/migrate/database/testing"
+	"github.com/mrqzzz/migrate/dktesting"
+	_ "github.com/mrqzzz/migrate/source/file"
 )
 
 var (
@@ -119,7 +118,7 @@ func TestMigrate(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		dt.TestMigrate(t, m)
+		dt.TestMigrate(t, m, []byte("SELECT 1"))
 	})
 }
 
@@ -248,7 +247,7 @@ func TestWithSchema(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if version != database.NilVersion {
+		if version != -1 {
 			t.Fatal("expected NilVersion")
 		}
 

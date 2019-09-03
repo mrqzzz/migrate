@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/golang-migrate/migrate/v4"
+	"github.com/mrqzzz/migrate"
 	"io"
 	"strconv"
 	"strings"
@@ -18,32 +18,25 @@ import (
 
 	"github.com/dhui/dktest"
 
-	"github.com/golang-migrate/migrate/v4/database"
-	dt "github.com/golang-migrate/migrate/v4/database/testing"
-	"github.com/golang-migrate/migrate/v4/dktesting"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-)
-
-const (
-	pgPassword = "postgres"
+	dt "github.com/mrqzzz/migrate/database/testing"
+	"github.com/mrqzzz/migrate/dktesting"
+	_ "github.com/mrqzzz/migrate/source/file"
 )
 
 var (
-	opts = dktest.Options{
-		Env:          map[string]string{"POSTGRES_PASSWORD": pgPassword},
-		PortRequired: true, ReadyFunc: isReady}
+	opts = dktest.Options{PortRequired: true, ReadyFunc: isReady}
 	// Supported versions: https://www.postgresql.org/support/versioning/
 	specs = []dktesting.ContainerSpec{
+		{ImageName: "postgres:9.4", Options: opts},
 		{ImageName: "postgres:9.5", Options: opts},
 		{ImageName: "postgres:9.6", Options: opts},
 		{ImageName: "postgres:10", Options: opts},
 		{ImageName: "postgres:11", Options: opts},
-		{ImageName: "postgres:12", Options: opts},
 	}
 )
 
 func pgConnectionString(host, port string) string {
-	return fmt.Sprintf("postgres://postgres:%s@%s:%s/postgres?sslmode=disable", pgPassword, host, port)
+	return fmt.Sprintf("postgres://postgres@%s:%s/postgres?sslmode=disable", host, port)
 }
 
 func isReady(ctx context.Context, c dktest.ContainerInfo) bool {
@@ -118,7 +111,7 @@ func TestMigrate(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		dt.TestMigrate(t, m)
+		dt.TestMigrate(t, m, []byte("SELECT 1"))
 	})
 }
 
@@ -191,8 +184,7 @@ func TestFilterCustomQuery(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		addr := fmt.Sprintf("postgres://postgres:%s@%v:%v/postgres?sslmode=disable&x-custom=foobar",
-			pgPassword, ip, port)
+		addr := fmt.Sprintf("postgres://postgres@%v:%v/postgres?sslmode=disable&x-custom=foobar", ip, port)
 		p := &Postgres{}
 		d, err := p.Open(addr)
 		if err != nil {
@@ -234,8 +226,7 @@ func TestWithSchema(t *testing.T) {
 		}
 
 		// re-connect using that schema
-		d2, err := p.Open(fmt.Sprintf("postgres://postgres:%s@%v:%v/postgres?sslmode=disable&search_path=foobar",
-			pgPassword, ip, port))
+		d2, err := p.Open(fmt.Sprintf("postgres://postgres@%v:%v/postgres?sslmode=disable&search_path=foobar", ip, port))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -249,7 +240,7 @@ func TestWithSchema(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if version != database.NilVersion {
+		if version != -1 {
 			t.Fatal("expected NilVersion")
 		}
 
@@ -304,8 +295,7 @@ func TestParallelSchema(t *testing.T) {
 		}
 
 		// re-connect using that schemas
-		dfoo, err := p.Open(fmt.Sprintf("postgres://postgres:%s@%v:%v/postgres?sslmode=disable&search_path=foo",
-			pgPassword, ip, port))
+		dfoo, err := p.Open(fmt.Sprintf("postgres://postgres@%v:%v/postgres?sslmode=disable&search_path=foo", ip, port))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -315,8 +305,7 @@ func TestParallelSchema(t *testing.T) {
 			}
 		}()
 
-		dbar, err := p.Open(fmt.Sprintf("postgres://postgres:%s@%v:%v/postgres?sslmode=disable&search_path=bar",
-			pgPassword, ip, port))
+		dbar, err := p.Open(fmt.Sprintf("postgres://postgres@%v:%v/postgres?sslmode=disable&search_path=bar", ip, port))
 		if err != nil {
 			t.Fatal(err)
 		}

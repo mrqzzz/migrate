@@ -8,10 +8,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/golang-migrate/migrate/v4"
-	dt "github.com/golang-migrate/migrate/v4/database/testing"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	_ "modernc.org/ql/driver"
+	_ "github.com/cznic/ql/driver"
+	"github.com/mrqzzz/migrate"
+	dt "github.com/mrqzzz/migrate/database/testing"
+	_ "github.com/mrqzzz/migrate/source/file"
 )
 
 func Test(t *testing.T) {
@@ -77,5 +77,5 @@ func TestMigrate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	dt.TestMigrate(t, m)
+	dt.TestMigrate(t, m, []byte("CREATE TABLE t (Qty int, Name string);"))
 }

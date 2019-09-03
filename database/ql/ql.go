@@ -10,9 +10,9 @@ import (
 
 	nurl "net/url"
 
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database"
-	_ "modernc.org/ql/driver"
+	_ "github.com/cznic/ql/driver"
+	"github.com/mrqzzz/migrate"
+	"github.com/mrqzzz/migrate/database"
 )
 
 func init() {
@@ -85,7 +85,7 @@ func (m *Ql) ensureVersionTable() (err error) {
 		return err
 	}
 	if _, err := tx.Exec(fmt.Sprintf(`
-	CREATE TABLE IF NOT EXISTS %s (version uint64, dirty bool);
+	CREATE TABLE IF NOT EXISTS %s (version uint64,dirty bool);
 	CREATE UNIQUE INDEX IF NOT EXISTS version_unique ON %s (version);
 `, m.config.MigrationsTable, m.config.MigrationsTable)); err != nil {
 		if err := tx.Rollback(); err != nil {
@@ -210,13 +210,9 @@ func (m *Ql) SetVersion(version int, dirty bool) error {
 		return &database.Error{OrigErr: err, Query: []byte(query)}
 	}
 
-	// Also re-write the schema version for nil dirty versions to prevent
-	// empty schema version for failed down migration on the first migration
-	// See: https://github.com/golang-migrate/migrate/issues/330
-	if version >= 0 || (version == database.NilVersion && dirty) {
-		query := fmt.Sprintf(`INSERT INTO %s (version, dirty) VALUES (uint64(?1), ?2)`,
-			m.config.MigrationsTable)
-		if _, err := tx.Exec(query, version, dirty); err != nil {
+	if version >= 0 {
+		query := fmt.Sprintf(`INSERT INTO %s (version, dirty) VALUES (%d, %t)`, m.config.MigrationsTable, version, dirty)
+		if _, err := tx.Exec(query); err != nil {
 			if errRollback := tx.Rollback(); errRollback != nil {
 				err = multierror.Append(err, errRollback)
 			}
