@@ -100,7 +100,7 @@ func (m *Mongo) SetVersion(version int, dirty bool) error {
 	migrationsCollection := m.db.Collection(m.config.MigrationsCollection)
 	filt := bson.D{{"version", bson.D{{"$exists", true}}}}
 	upd := bson.D{{"$set", bson.D{
-		{"version", int32(version)},
+		{"version", version},
 		{"dirty", dirty},
 	}}}
 	var tr = true
