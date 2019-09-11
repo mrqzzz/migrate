@@ -1,4 +1,4 @@
-module github.com/mrqzzz/migrate
+module github.com/mrqzzz/migrate/v5
 
 require (
 	cloud.google.com/go v0.37.4
