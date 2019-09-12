@@ -13,7 +13,7 @@ import (
 
 import (
 	"github.com/google/go-github/github"
-	"github.com/mrqzzz/migrate/source"
+	"github.com/mrqzzz/migrate/v5/source"
 )
 
 func init() {

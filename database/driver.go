@@ -9,7 +9,7 @@ import (
 	"io"
 	"sync"
 
-	iurl "github.com/mrqzzz/migrate/internal/url"
+	iurl "github.com/mrqzzz/migrate/v5/internal/url"
 )
 
 var (

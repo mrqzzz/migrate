@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/mrqzzz/migrate"
-	"github.com/mrqzzz/migrate/database"
+	"github.com/mrqzzz/migrate/v5"
+	"github.com/mrqzzz/migrate/v5/database"
 )
 
 var DefaultMigrationsTable = "schema_migrations"

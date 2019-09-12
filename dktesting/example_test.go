@@ -10,7 +10,7 @@ import (
 )
 
 import (
-	"github.com/mrqzzz/migrate/dktesting"
+	"github.com/mrqzzz/migrate/v5/dktesting"
 )
 
 func ExampleParallelTest() {

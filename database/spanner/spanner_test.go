@@ -7,9 +7,9 @@ import (
 )
 
 import (
-	"github.com/mrqzzz/migrate"
-	dt "github.com/mrqzzz/migrate/database/testing"
-	_ "github.com/mrqzzz/migrate/source/file"
+	"github.com/mrqzzz/migrate/v5"
+	dt "github.com/mrqzzz/migrate/v5/database/testing"
+	_ "github.com/mrqzzz/migrate/v5/source/file"
 )
 
 import (

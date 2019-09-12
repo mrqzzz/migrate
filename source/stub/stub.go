@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/mrqzzz/migrate/source"
+	"github.com/mrqzzz/migrate/v5/source"
 )
 
 func init() {

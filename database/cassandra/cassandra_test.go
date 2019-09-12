@@ -3,7 +3,7 @@ package cassandra
 import (
 	"context"
 	"fmt"
-	"github.com/mrqzzz/migrate"
+	"github.com/mrqzzz/migrate/v5"
 	"strconv"
 	"testing"
 )
@@ -14,9 +14,9 @@ import (
 )
 
 import (
-	dt "github.com/mrqzzz/migrate/database/testing"
-	"github.com/mrqzzz/migrate/dktesting"
-	_ "github.com/mrqzzz/migrate/source/file"
+	dt "github.com/mrqzzz/migrate/v5/database/testing"
+	"github.com/mrqzzz/migrate/v5/dktesting"
+	_ "github.com/mrqzzz/migrate/v5/source/file"
 )
 
 var (

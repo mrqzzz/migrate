@@ -8,7 +8,7 @@ import (
 )
 
 import (
-	"github.com/mrqzzz/migrate"
+	"github.com/mrqzzz/migrate/v5"
 )
 
 // TestMigrate runs integration-tests between the Migrate layer and database implementations.

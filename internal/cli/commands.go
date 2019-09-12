@@ -3,9 +3,9 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"github.com/mrqzzz/migrate"
-	_ "github.com/mrqzzz/migrate/database/stub" // TODO remove again
-	_ "github.com/mrqzzz/migrate/source/file"
+	"github.com/mrqzzz/migrate/v5"
+	_ "github.com/mrqzzz/migrate/v5/database/stub" // TODO remove again
+	_ "github.com/mrqzzz/migrate/v5/source/file"
 	"os"
 	"path/filepath"
 	"strconv"

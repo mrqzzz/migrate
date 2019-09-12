@@ -3,5 +3,5 @@
 package cli
 
 import (
-	_ "github.com/mrqzzz/migrate/database/postgres"
+	_ "github.com/mrqzzz/migrate/v5/database/postgres"
 )

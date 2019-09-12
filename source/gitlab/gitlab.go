@@ -13,7 +13,7 @@ import (
 )
 
 import (
-	"github.com/mrqzzz/migrate/source"
+	"github.com/mrqzzz/migrate/v5/source"
 	"github.com/xanzy/go-gitlab"
 )
 

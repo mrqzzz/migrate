@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mrqzzz/migrate/source"
+	"github.com/mrqzzz/migrate/v5/source"
 )
 
 // Test runs tests against source implementations.
