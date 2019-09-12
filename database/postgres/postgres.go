@@ -14,8 +14,8 @@ import (
 
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/lib/pq"
-	"github.com/mrqzzz/migrate"
-	"github.com/mrqzzz/migrate/database"
+	"github.com/mrqzzz/migrate/v5"
+	"github.com/mrqzzz/migrate/v5/database"
 )
 
 func init() {

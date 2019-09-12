@@ -11,12 +11,12 @@ import (
 	"time"
 
 	"github.com/dhui/dktest"
-	"github.com/mrqzzz/migrate"
+	"github.com/mrqzzz/migrate/v5"
 
-	dt "github.com/mrqzzz/migrate/database/testing"
-	"github.com/mrqzzz/migrate/dktesting"
+	dt "github.com/mrqzzz/migrate/v5/database/testing"
+	"github.com/mrqzzz/migrate/v5/dktesting"
 
-	_ "github.com/mrqzzz/migrate/source/file"
+	_ "github.com/mrqzzz/migrate/v5/source/file"
 )
 
 const defaultPort = 1433

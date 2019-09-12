@@ -3,5 +3,5 @@
 package cli
 
 import (
-	_ "github.com/mrqzzz/migrate/source/github_ee"
+	_ "github.com/mrqzzz/migrate/v5/source/github_ee"
 )

@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/mrqzzz/migrate/database"
-	iurl "github.com/mrqzzz/migrate/internal/url"
-	"github.com/mrqzzz/migrate/source"
+	"github.com/mrqzzz/migrate/v5/database"
+	iurl "github.com/mrqzzz/migrate/v5/internal/url"
+	"github.com/mrqzzz/migrate/v5/source"
 )
 
 // DefaultPrefetchMigrations sets the number of migrations to pre-read

@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mrqzzz/migrate/database"
+	"github.com/mrqzzz/migrate/v5/database"
 )
 
 // Test runs tests against database implementations.

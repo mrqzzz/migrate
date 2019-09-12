@@ -1,12 +1,12 @@
 package stub
 
 import (
-	"github.com/mrqzzz/migrate"
-	"github.com/mrqzzz/migrate/source"
-	"github.com/mrqzzz/migrate/source/stub"
+	"github.com/mrqzzz/migrate/v5"
+	"github.com/mrqzzz/migrate/v5/source"
+	"github.com/mrqzzz/migrate/v5/source/stub"
 	"testing"
 
-	dt "github.com/mrqzzz/migrate/database/testing"
+	dt "github.com/mrqzzz/migrate/v5/database/testing"
 )
 
 func Test(t *testing.T) {

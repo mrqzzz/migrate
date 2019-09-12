@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	st "github.com/mrqzzz/migrate/source/testing"
+	st "github.com/mrqzzz/migrate/v5/source/testing"
 )
 
 var GithubTestSecret = "" // username:token
