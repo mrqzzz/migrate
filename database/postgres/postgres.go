@@ -11,6 +11,7 @@ import (
 	nurl "net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	multierror "github.com/hashicorp/go-multierror"
 	"github.com/lib/pq"
@@ -34,9 +35,10 @@ var (
 )
 
 type Config struct {
-	MigrationsTable string
-	DatabaseName    string
-	SchemaName      string
+	MigrationsTable  string
+	DatabaseName     string
+	SchemaName       string
+	StatementTimeout time.Duration
 }
 
 type Postgres struct {
@@ -58,29 +60,33 @@ func WithInstance(instance *sql.DB, config *Config) (database.Driver, error) {
 		return nil, err
 	}
 
-	query := `SELECT CURRENT_DATABASE()`
-	var databaseName string
-	if err := instance.QueryRow(query).Scan(&databaseName); err != nil {
-		return nil, &database.Error{OrigErr: err, Query: []byte(query)}
+	if config.DatabaseName == "" {
+		query := `SELECT CURRENT_DATABASE()`
+		var databaseName string
+		if err := instance.QueryRow(query).Scan(&databaseName); err != nil {
+			return nil, &database.Error{OrigErr: err, Query: []byte(query)}
+		}
+
+		if len(databaseName) == 0 {
+			return nil, ErrNoDatabaseName
+		}
+
+		config.DatabaseName = databaseName
 	}
 
-	if len(databaseName) == 0 {
-		return nil, ErrNoDatabaseName
+	if config.SchemaName == "" {
+		query := `SELECT CURRENT_SCHEMA()`
+		var schemaName string
+		if err := instance.QueryRow(query).Scan(&schemaName); err != nil {
+			return nil, &database.Error{OrigErr: err, Query: []byte(query)}
+		}
+
+		if len(schemaName) == 0 {
+			return nil, ErrNoSchema
+		}
+
+		config.SchemaName = schemaName
 	}
-
-	config.DatabaseName = databaseName
-
-	query = `SELECT CURRENT_SCHEMA()`
-	var schemaName string
-	if err := instance.QueryRow(query).Scan(&schemaName); err != nil {
-		return nil, &database.Error{OrigErr: err, Query: []byte(query)}
-	}
-
-	if len(schemaName) == 0 {
-		return nil, ErrNoSchema
-	}
-
-	config.SchemaName = schemaName
 
 	if len(config.MigrationsTable) == 0 {
 		config.MigrationsTable = DefaultMigrationsTable
@@ -117,10 +123,19 @@ func (p *Postgres) Open(url string) (database.Driver, error) {
 	}
 
 	migrationsTable := purl.Query().Get("x-migrations-table")
+	statementTimeoutString := purl.Query().Get("x-statement-timeout")
+	statementTimeout := 0
+	if statementTimeoutString != "" {
+		statementTimeout, err = strconv.Atoi(statementTimeoutString)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	px, err := WithInstance(db, &Config{
-		DatabaseName:    purl.Path,
-		MigrationsTable: migrationsTable,
+		DatabaseName:     purl.Path,
+		MigrationsTable:  migrationsTable,
+		StatementTimeout: time.Duration(statementTimeout) * time.Millisecond,
 	})
 
 	if err != nil {
@@ -150,8 +165,7 @@ func (p *Postgres) Lock() error {
 		return err
 	}
 
-	// This will either obtain the lock immediately and return true,
-	// or return false if the lock cannot be acquired immediately.
+	// This will wait indefinitely until the lock can be acquired.
 	query := `SELECT pg_advisory_lock($1)`
 	if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 		return &database.Error{OrigErr: err, Err: "try lock failed", Query: []byte(query)}
@@ -184,10 +198,15 @@ func (p *Postgres) Run(migration io.Reader) error {
 	if err != nil {
 		return err
 	}
-
+	ctx := context.Background()
+	if p.config.StatementTimeout != 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, p.config.StatementTimeout)
+		defer cancel()
+	}
 	// run migration
 	query := string(migr[:])
-	if _, err := p.conn.ExecContext(context.Background(), query); err != nil {
+	if _, err := p.conn.ExecContext(ctx, query); err != nil {
 		if pgErr, ok := err.(*pq.Error); ok {
 			var line uint
 			var col uint
@@ -261,8 +280,12 @@ func (p *Postgres) SetVersion(version int, dirty bool) error {
 		return &database.Error{OrigErr: err, Query: []byte(query)}
 	}
 
-	if version >= 0 {
-		query = `INSERT INTO ` + pq.QuoteIdentifier(p.config.MigrationsTable) + ` (version, dirty) VALUES ($1, $2)`
+	// Also re-write the schema version for nil dirty versions to prevent
+	// empty schema version for failed down migration on the first migration
+	// See: https://github.com/golang-migrate/migrate/issues/330
+	if version >= 0 || (version == database.NilVersion && dirty) {
+		query = `INSERT INTO ` + pq.QuoteIdentifier(p.config.MigrationsTable) +
+			` (version, dirty) VALUES ($1, $2)`
 		if _, err := tx.Exec(query, version, dirty); err != nil {
 			if errRollback := tx.Rollback(); errRollback != nil {
 				err = multierror.Append(err, errRollback)

@@ -61,17 +61,19 @@ func WithInstance(instance *sql.DB, config *Config) (database.Driver, error) {
 		return nil, err
 	}
 
-	query := `SELECT current_database()`
-	var databaseName string
-	if err := instance.QueryRow(query).Scan(&databaseName); err != nil {
-		return nil, &database.Error{OrigErr: err, Query: []byte(query)}
-	}
+	if config.DatabaseName == "" {
+		query := `SELECT current_database()`
+		var databaseName string
+		if err := instance.QueryRow(query).Scan(&databaseName); err != nil {
+			return nil, &database.Error{OrigErr: err, Query: []byte(query)}
+		}
 
-	if len(databaseName) == 0 {
-		return nil, ErrNoDatabaseName
-	}
+		if len(databaseName) == 0 {
+			return nil, ErrNoDatabaseName
+		}
 
-	config.DatabaseName = databaseName
+		config.DatabaseName = databaseName
+	}
 
 	if len(config.MigrationsTable) == 0 {
 		config.MigrationsTable = DefaultMigrationsTable
@@ -238,7 +240,10 @@ func (c *CockroachDb) SetVersion(version int, dirty bool) error {
 			return err
 		}
 
-		if version >= 0 {
+		// Also re-write the schema version for nil dirty versions to prevent
+		// empty schema version for failed down migration on the first migration
+		// See: https://github.com/golang-migrate/migrate/issues/330
+		if version >= 0 || (version == database.NilVersion && dirty) {
 			if _, err := tx.Exec(`INSERT INTO "`+c.config.MigrationsTable+`" (version, dirty) VALUES ($1, $2)`, version, dirty); err != nil {
 				return err
 			}

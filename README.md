@@ -3,9 +3,9 @@
 [![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
 [![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
 [![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.11%2C%201.12-lightgrey.svg)
+![Supported Go Versions](https://img.shields.io/badge/Go-1.13%2C%201.14-lightgrey.svg)
 [![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate)](https://goreportcard.com/report/github.com/golang-migrate/migrate) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate)](https://goreportcard.com/report/github.com/golang-migrate/migrate)
 
 # migrate
 
@@ -29,14 +29,14 @@ Database drivers run migrations. [Add a new database?](database/driver.go)
 * [Cassandra](database/cassandra)
 * [SQLite](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
 * [MySQL/ MariaDB](database/mysql)
-* [Neo4j](database/neo4j) ([todo #167](https://github.com/mattes/migrate/issues/167))
+* [Neo4j](database/neo4j)
 * [MongoDB](database/mongodb)
 * [CrateDB](database/crate) ([todo #170](https://github.com/mattes/migrate/issues/170))
 * [Shell](database/shell) ([todo #171](https://github.com/mattes/migrate/issues/171))
 * [Google Cloud Spanner](database/spanner)
 * [CockroachDB](database/cockroachdb)
 * [ClickHouse](database/clickhouse)
-* [Firebird](database/firebird) ([todo #49](https://github.com/golang-migrate/migrate/issues/49))
+* [Firebird](database/firebird)
 * [MS SQL Server](database/sqlserver)
 
 ### Database URLs
@@ -146,7 +146,8 @@ Go to [getting started](GETTING_STARTED.md)
 
 ## Tutorials
 
-- [PostgreSQL](database/postgres/TUTORIAL.md)
+* [CockroachDB](database/cockroachdb/TUTORIAL.md)
+* [PostgreSQL](database/postgres/TUTORIAL.md)
 
 (more tutorials to come)
 

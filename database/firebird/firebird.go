@@ -134,17 +134,20 @@ func (f *Firebird) Run(migration io.Reader) error {
 }
 
 func (f *Firebird) SetVersion(version int, dirty bool) error {
-	if version < 0 {
-		return nil
-	}
+	// Always re-write the schema version to prevent empty schema version
+	// for failed down migration on the first migration
+	// See: https://github.com/golang-migrate/migrate/issues/330
 
+	// TODO: parameterize this SQL statement
+	//       https://firebirdsql.org/refdocs/langrefupd20-execblock.html
+	//       VALUES (?, ?) doesn't work
 	query := fmt.Sprintf(`EXECUTE BLOCK AS BEGIN
 					DELETE FROM "%v";
 					INSERT INTO "%v" (version, dirty) VALUES (%v, %v);
 				END;`,
 		f.config.MigrationsTable, f.config.MigrationsTable, version, btoi(dirty))
 
-	if _, err := f.conn.ExecContext(context.Background(), query, version, btoi(dirty)); err != nil {
+	if _, err := f.conn.ExecContext(context.Background(), query); err != nil {
 		return &database.Error{OrigErr: err, Query: []byte(query)}
 	}
 
